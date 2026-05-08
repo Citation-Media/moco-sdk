@@ -12,8 +12,8 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "flue:moco-api-pr": "flue run moco-api-pr --target node",
-    "flue:moco-api-watch": "flue run moco-api-watch --target node",
+    "flue:moco-api-pr": "flue run moco-api-pr --target node --id ${FLUE_RUN_ID:-moco-api-pr-local}",
+    "flue:moco-api-watch": "flue run moco-api-watch --target node --id ${FLUE_RUN_ID:-moco-api-watch-local}",
     "generate": "node scripts/generate-from-docs.mjs",
     "moco:api-findings": "node scripts/moco-watch/find-api-findings.mjs",
     "test": "npm run build && node --test test/*.test.mjs"

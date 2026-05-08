@@ -32,6 +32,7 @@ jobs:
 
       - name: Run MOCO API watch agent
         env:
+          FLUE_RUN_ID: moco-api-watch-${{ github.run_id }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm run flue:moco-api-watch -- --payload '{"dryRun":${{ github.event.inputs.dry_run || 'false' }}}'

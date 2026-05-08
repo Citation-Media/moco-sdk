@@ -41,6 +41,7 @@ jobs:
 
       - name: Run MOCO API PR agent
         env:
+          FLUE_RUN_ID: moco-api-pr-${{ github.run_id }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ISSUE_NUMBER: ${{ github.event.issue.number || github.event.inputs.issue_number }}
         run: |
