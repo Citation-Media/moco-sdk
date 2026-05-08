@@ -22,6 +22,7 @@ export default async function ({ init, payload, env }: FlueContext) {
   const issueNumber = Number(typedPayload?.issueNumber ?? process.env.ISSUE_NUMBER);
   const dryRun = Boolean(typedPayload?.dryRun);
   const repo = process.env.GITHUB_REPOSITORY ?? env?.GITHUB_REPOSITORY;
+  syncCloudflareApiKey(env);
 
   if (!issueNumber || !repo) {
     return v.parse(ResultSchema, {
@@ -148,4 +149,8 @@ Requirements:
   execFileSync("gh", ["issue", "edit", String(issueNumber), "--add-label", PR_OPENED_LABEL], { stdio: "inherit" });
 
   return v.parse(ResultSchema, { issueNumber, prCreated: true });
+}
+
+function syncCloudflareApiKey(env: Record<string, string | undefined>) {
+  process.env.CLOUDFLARE_API_KEY ||= env.CLOUDFLARE_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN;
 }

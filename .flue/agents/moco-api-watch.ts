@@ -34,6 +34,7 @@ interface StoredFinding extends Finding {
 
 export default async function ({ init, payload, env }: FlueContext) {
   const dryRun = Boolean((payload as { dryRun?: boolean } | undefined)?.dryRun);
+  syncCloudflareApiKey(env);
 
   mkdirSync(".flue/tmp", { recursive: true });
   writeFileSync(".flue/tmp/API_COVERAGE.before.md", readFileSync("docs/API_COVERAGE.md", "utf8"), "utf8");
@@ -136,4 +137,8 @@ ${findingMarker(finding.hash)}
     findings: keptFindings.length,
     timestampCommitted: createdIssues.length > 0 && !dryRun,
   });
+}
+
+function syncCloudflareApiKey(env: Record<string, string | undefined>) {
+  process.env.CLOUDFLARE_API_KEY ||= env.CLOUDFLARE_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN;
 }
