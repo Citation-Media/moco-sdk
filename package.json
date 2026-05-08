@@ -2,6 +2,10 @@
   "name": "@citation-media/moco-sdk",
   "version": "1.0.0",
   "description": "TypeScript SDK for the MOCO ERP API.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Citation-Media/moco-sdk.git"
+  },
   "type": "commonjs",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
