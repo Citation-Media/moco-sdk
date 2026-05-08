@@ -16,7 +16,7 @@ import {
 
 export const triggers = {};
 
-const gh = defineCommand("gh", { env: { GH_TOKEN: process.env.GITHUB_TOKEN ?? process.env.GH_TOKEN } });
+const MODEL = "openai/workers-ai/@cf/moonshotai/kimi-k2.6";
 const git = defineCommand("git");
 const npm = defineCommand("npm");
 const node = defineCommand("node");
@@ -32,8 +32,9 @@ interface StoredFinding extends Finding {
   hash: string;
 }
 
-export default async function ({ init, payload }: FlueContext) {
+export default async function ({ init, payload, env }: FlueContext) {
   const dryRun = Boolean((payload as { dryRun?: boolean } | undefined)?.dryRun);
+
   mkdirSync(".flue/tmp", { recursive: true });
   writeFileSync(".flue/tmp/API_COVERAGE.before.md", readFileSync("docs/API_COVERAGE.md", "utf8"), "utf8");
 
@@ -48,7 +49,8 @@ export default async function ({ init, payload }: FlueContext) {
 
   const agent = await init({
     sandbox: "local",
-    model: "@cf/moonshotai/kimi-k2.6",
+    model: MODEL,
+    providers: cloudflareAiGatewayProvider(env),
   });
   const session = await agent.session("moco-api-watch");
   const reviewed = await session.prompt(
@@ -63,7 +65,7 @@ Rules:
 Candidate findings JSON:
 ${JSON.stringify(rawFindings, null, 2)}`,
     {
-      commands: [git, gh, npm, node, curl],
+      commands: [git, npm, node, curl],
       result: v.object({
         findings: v.array(
           v.object({
@@ -135,4 +137,21 @@ ${findingMarker(finding.hash)}
     findings: keptFindings.length,
     timestampCommitted: createdIssues.length > 0 && !dryRun,
   });
+}
+
+function cloudflareAiGatewayProvider(env: Record<string, string | undefined>) {
+  const accountId = env.CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
+  const apiKey = env.CLOUDFLARE_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN;
+  const gatewayId = env.CLOUDFLARE_AI_GATEWAY_ID || process.env.CLOUDFLARE_AI_GATEWAY_ID || "default";
+
+  if (!accountId || !apiKey) {
+    throw new Error("CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN are required for Flue model access.");
+  }
+
+  return {
+    openai: {
+      apiKey,
+      baseUrl: `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/compat`,
+    },
+  };
 }

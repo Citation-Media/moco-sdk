@@ -220,16 +220,18 @@ npm test          # Build and run SDK behavior tests
 This repository uses [Flue](https://github.com/withastro/flue#readme) to watch for new MOCO REST API functionality.
 
 - `MOCO API Watch` runs every Monday at 06:00 UTC and can also be triggered manually from GitHub Actions.
+- Both Flue agents use Cloudflare AI Gateway with model `openai/workers-ai/@cf/moonshotai/kimi-k2.6`. The `openai/` prefix selects Flue's OpenAI-compatible provider, while the provider base URL points at Cloudflare AI Gateway's `/compat` endpoint.
 - The watch agent updates the docs submodule in its CI workspace, regenerates `docs/API_COVERAGE.md`, checks `https://www.mocoapp.com/blog.atom`, and opens one issue per new API-relevant finding.
 - The watch agent updates the `Last MOCO API feature check with findings` timestamp above by direct commit only when it creates at least one issue.
 - `MOCO API PR Agent` runs on trusted `moco-api-update` issues and opens implementation PRs.
 - Issues created by `github-actions[bot]` are trusted only when they include the expected Flue labels and hidden finding marker. Human-created issues must be authored by a repo collaborator with `write`, `maintain`, or `admin` permission.
+- Add `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as GitHub Actions repository secrets before enabling the workflows. Optionally set repository variable `CLOUDFLARE_AI_GATEWAY_ID`; it defaults to `default`.
 
 Manual runs:
 
 ```bash
 cp .env.example .env
-# Fill GITHUB_TOKEN/GH_TOKEN and Cloudflare credentials in .env, then load them:
+# Fill GITHUB_TOKEN/GH_TOKEN and Cloudflare AI Gateway values in .env, then load them:
 set -a && source .env && set +a
 
 npm run flue:moco-api-watch -- --payload '{"dryRun":true}'
