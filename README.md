@@ -224,6 +224,7 @@ This repository uses [Flue](https://github.com/withastro/flue#readme) to watch f
 - `MOCO API PR Agent` runs on trusted `moco-api-update` issues and opens implementation PRs.
 - Issues created by `github-actions[bot]` are trusted only when they include the expected Flue labels and hidden finding marker. Human-created issues must be authored by a repo collaborator with `write`, `maintain`, or `admin` permission.
 - Add `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` as GitHub Actions repository secrets before enabling the workflows. The workflow maps `CLOUDFLARE_API_TOKEN` to the `CLOUDFLARE_API_KEY` env var expected by Flue's Workers AI provider.
+- Allow GitHub Actions to create pull requests in the repository settings, or add `FLUE_GITHUB_TOKEN` as a repository secret containing a PAT with access to create branches, issues, workflow dispatches, and pull requests.
 
 Manual runs:
 

@@ -138,18 +138,29 @@ Requirements:
 
   execFileSync("git", ["commit", "-m", `Implement MOCO API update from #${issueNumber}`], { stdio: "inherit" });
   execFileSync("git", ["push", "--set-upstream", "origin", branch], { stdio: "inherit" });
-  const prUrl = execFileSync(
-    "gh",
-    [
-      "pr",
-      "create",
-      "--title",
-      `Implement MOCO API update from #${issueNumber}: ${issue.title}`,
-      "--body",
-      `Closes #${issueNumber}\n\n${result.summary}\n\nTests: ${result.tests}`,
-    ],
-    { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] },
-  ).trim();
+  const prBody = `Closes #${issueNumber}\n\n${result.summary}\n\nTests: ${result.tests}`;
+  const prTitle = `Implement MOCO API update from #${issueNumber}: ${issue.title}`;
+  let prUrl: string;
+
+  try {
+    prUrl = execFileSync(
+      "gh",
+      ["pr", "create", "--title", prTitle, "--body", prBody],
+      { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] },
+    ).trim();
+  } catch {
+    const compareUrl = `https://github.com/${repo}/compare/main...${branch}`;
+    const body = `Flue pushed implementation branch \`${branch}\`, but could not create the PR with the available token.\n\nOpen it manually: ${compareUrl}\n\nThis usually means the repository setting allowing GitHub Actions to create pull requests is disabled, or \`FLUE_GITHUB_TOKEN\` is missing.`;
+
+    execFileSync("gh", ["issue", "comment", String(issueNumber), "--body", body], { stdio: "inherit" });
+    execFileSync("gh", ["issue", "edit", String(issueNumber), "--add-label", NEEDS_HUMAN_LABEL], { stdio: "inherit" });
+
+    return v.parse(ResultSchema, {
+      issueNumber,
+      prCreated: false,
+      reason: "Implementation branch pushed, but PR creation was blocked by GitHub token permissions.",
+    });
+  }
 
   execFileSync("gh", ["issue", "comment", String(issueNumber), "--body", `Implementation PR opened: ${prUrl}`], {
     stdio: "inherit",
