@@ -145,6 +145,123 @@ test("verifies MOCO webhook signatures against the raw payload", async () => {
   );
 });
 
+test("sends Bearer token when authScheme is bearer", async () => {
+  const requests = [];
+  const client = new MocoClient({
+    apiKey: "secret",
+    authScheme: "bearer",
+    baseUrl: "https://demo.mocoapp.com/api/v1",
+    fetch: async (url, init) => {
+      requests.push({ init, url: url.toString() });
+      return jsonResponse({ id: 1 });
+    },
+  });
+
+  await client.profile.list();
+  assert.equal(requests[0].init.headers.get("Authorization"), "Bearer secret");
+});
+
+test("supports company archive and unarchive", async () => {
+  const requests = [];
+  const client = new MocoClient({
+    apiKey: "secret",
+    baseUrl: "https://demo.mocoapp.com/api/v1",
+    fetch: async (url, init) => {
+      requests.push({ init, url: url.toString() });
+      return jsonResponse({ id: 42, name: "Acme" });
+    },
+  });
+
+  await client.companies.archive({ companyId: 42 });
+  assert.equal(requests[0].init.method, "PUT");
+  assert.equal(new URL(requests[0].url).pathname, "/api/v1/companies/42/archive");
+
+  await client.companies.unarchive({ companyId: 42 });
+  assert.equal(requests[1].init.method, "PUT");
+  assert.equal(new URL(requests[1].url).pathname, "/api/v1/companies/42/unarchive");
+});
+
+test("supports project recurring expense recur action", async () => {
+  const requests = [];
+  const client = new MocoClient({
+    apiKey: "secret",
+    baseUrl: "https://demo.mocoapp.com/api/v1",
+    fetch: async (url, init) => {
+      requests.push({ init, url: url.toString() });
+      return jsonResponse({ id: 7, title: "Hosting" });
+    },
+  });
+
+  await client.projectRecurringExpenses.recur({ projectId: 3, recurringExpenseId: 5 });
+  assert.equal(requests[0].init.method, "POST");
+  assert.equal(new URL(requests[0].url).pathname, "/api/v1/projects/3/recurring_expenses/5/recur");
+});
+
+test("supports letter papers list", async () => {
+  const requests = [];
+  const client = new MocoClient({
+    apiKey: "secret",
+    baseUrl: "https://demo.mocoapp.com/api/v1",
+    fetch: async (url, init) => {
+      requests.push({ init, url: url.toString() });
+      return jsonResponse([{ id: 1, name: "Default" }]);
+    },
+  });
+
+  const response = await client.letterPapers.list();
+  assert.equal(requests[0].init.method, "GET");
+  assert.equal(new URL(requests[0].url).pathname, "/api/v1/letter_papers");
+  assert.deepEqual(response.data, [{ id: 1, name: "Default" }]);
+});
+
+test("supports purchase drafts endpoints", async () => {
+  const requests = [];
+  const client = new MocoClient({
+    apiKey: "secret",
+    baseUrl: "https://demo.mocoapp.com/api/v1",
+    fetch: async (url, init) => {
+      requests.push({ init, url: url.toString() });
+      return jsonResponse({ id: 9, title: "Draft" });
+    },
+  });
+
+  await client.purchaseDrafts.create({ title: "Draft" });
+  assert.equal(requests[0].init.method, "POST");
+  assert.equal(new URL(requests[0].url).pathname, "/api/v1/purchases/drafts");
+  assert.equal(requests[0].init.body, JSON.stringify({ title: "Draft" }));
+
+  await client.purchaseDrafts.get({ id: 9 });
+  assert.equal(requests[1].init.method, "GET");
+  assert.equal(new URL(requests[1].url).pathname, "/api/v1/purchases/drafts/9");
+
+  await client.purchaseDrafts.getPdf({ id: 9 });
+  assert.equal(requests[2].init.method, "GET");
+  assert.equal(new URL(requests[2].url).pathname, "/api/v1/purchases/drafts/9.pdf");
+
+  await client.purchaseDrafts.delete({ id: 9 });
+  assert.equal(requests[3].init.method, "DELETE");
+  assert.equal(new URL(requests[3].url).pathname, "/api/v1/purchases/drafts/9");
+});
+
+test("supports planned vs tracked report", async () => {
+  const requests = [];
+  const client = new MocoClient({
+    apiKey: "secret",
+    baseUrl: "https://demo.mocoapp.com/api/v1",
+    fetch: async (url, init) => {
+      requests.push({ init, url: url.toString() });
+      return jsonResponse([{ user_id: 1, planned_hours: 100, tracked_hours: 90 }]);
+    },
+  });
+
+  const response = await client.reports.listPlannedVTracked({ from: "2026-01-01", to: "2026-03-31" });
+  assert.equal(requests[0].init.method, "GET");
+  assert.equal(new URL(requests[0].url).pathname, "/api/v1/report/planned_vs_tracked");
+  assert.equal(new URL(requests[0].url).searchParams.get("from"), "2026-01-01");
+  assert.equal(new URL(requests[0].url).searchParams.get("to"), "2026-03-31");
+  assert.deepEqual(response.data, [{ user_id: 1, planned_hours: 100, tracked_hours: 90 }]);
+});
+
 function jsonResponse(body, headers = {}, status = 200, statusText = "OK") {
   return new Response(JSON.stringify(body), {
     headers,
