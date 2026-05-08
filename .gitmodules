@@ -1,0 +1,3 @@
+[submodule "mocoapp-api-docs"]
+	path = mocoapp-api-docs
+	url = https://github.com/everii-group/mocoapp-api-docs

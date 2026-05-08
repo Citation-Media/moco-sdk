@@ -1,0 +1,37 @@
+{
+  "name": "moco-sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for the MOCO ERP API.",
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "docs/API_COVERAGE.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "flue:moco-api-pr": "flue run moco-api-pr --target node",
+    "flue:moco-api-watch": "flue run moco-api-watch --target node",
+    "generate": "node scripts/generate-from-docs.mjs",
+    "moco:api-findings": "node scripts/moco-watch/find-api-findings.mjs",
+    "test": "npm run build && node --test test/*.test.mjs"
+  },
+  "keywords": [
+    "moco",
+    "erp",
+    "sdk",
+    "typescript"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@flue/cli": "latest",
+    "@flue/sdk": "latest",
+    "typescript": ">=4.9",
+    "valibot": "latest"
+  }
+}
