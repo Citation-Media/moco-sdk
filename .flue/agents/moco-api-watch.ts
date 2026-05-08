@@ -16,7 +16,7 @@ import {
 
 export const triggers = {};
 
-const MODEL = "openai/workers-ai/@cf/moonshotai/kimi-k2.6";
+const MODEL = "cloudflare-workers-ai/@cf/moonshotai/kimi-k2.6";
 const git = defineCommand("git");
 const npm = defineCommand("npm");
 const node = defineCommand("node");
@@ -50,7 +50,6 @@ export default async function ({ init, payload, env }: FlueContext) {
   const agent = await init({
     sandbox: "local",
     model: MODEL,
-    providers: cloudflareAiGatewayProvider(env),
   });
   const session = await agent.session("moco-api-watch");
   const reviewed = await session.prompt(
@@ -137,21 +136,4 @@ ${findingMarker(finding.hash)}
     findings: keptFindings.length,
     timestampCommitted: createdIssues.length > 0 && !dryRun,
   });
-}
-
-function cloudflareAiGatewayProvider(env: Record<string, string | undefined>) {
-  const accountId = env.CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLARE_ACCOUNT_ID;
-  const apiKey = env.CLOUDFLARE_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN;
-  const gatewayId = env.CLOUDFLARE_AI_GATEWAY_ID || process.env.CLOUDFLARE_AI_GATEWAY_ID || "default";
-
-  if (!accountId || !apiKey) {
-    throw new Error("CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN are required for Flue model access.");
-  }
-
-  return {
-    openai: {
-      apiKey,
-      baseUrl: `https://gateway.ai.cloudflare.com/v1/${accountId}/${gatewayId}/compat`,
-    },
-  };
 }
