@@ -165,7 +165,7 @@ export function issueBodyForFinding(finding: Finding, hash: string): string {
 
 ## Summary
 
-${finding.summary}
+${compactText(finding.summary, 1200)}
 
 ## Affected API Surface
 
@@ -216,7 +216,7 @@ export function ensureFlueLabels(): void {
 
 export function isTrustedIssueAuthor(author: string, body: string, labels: string[], repo: string): boolean {
   const isTrustedBot =
-    author === "github-actions[bot]" &&
+    ["app/github-actions", "github-actions[bot]"].includes(author) &&
     labels.includes(FINDING_LABEL) &&
     labels.includes(AUTO_PR_LABEL) &&
     body.includes(FINDING_MARKER_PREFIX);
@@ -237,6 +237,13 @@ export function isTrustedIssueAuthor(author: string, body: string, labels: strin
 
 function endpointKey(endpoint: CoverageEndpoint): string {
   return `${endpoint.method} ${endpoint.path}`;
+}
+
+function compactText(value: string, maxLength: number): string {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (normalized.length <= maxLength) return normalized;
+
+  return `${normalized.slice(0, maxLength - 1).trimEnd()}…`;
 }
 
 function readTag(xml: string, tag: string): string {

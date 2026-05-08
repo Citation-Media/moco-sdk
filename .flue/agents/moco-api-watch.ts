@@ -68,8 +68,10 @@ Rules:
 - For every kept finding, set sdkActionable=true only when there is a concrete SDK implementation or generator/docs update that should be considered.
 - Return no finding for a blog article that is merely interesting but not SDK-actionable.
 - Do not invent new findings.
-- Preserve hash, title, summary, affectedEndpoints, docsUrls, blogUrls, and recommendedSdkWork exactly enough for issue creation.
-- Add a short validationReason explaining why the SDK should consider implementing it.
+- Preserve hash, title, affectedEndpoints, docsUrls, and blogUrls exactly.
+- Rewrite summary in concise English. Use at most 6 bullet points or 900 characters. Do not paste the full blog article.
+- Rewrite recommendedSdkWork in concise English with concrete SDK work to consider.
+- Add a short English validationReason explaining why the SDK should consider implementing it.
 
 Candidate findings JSON:
 ${JSON.stringify(rawFindings, null, 2)}`,
@@ -129,7 +131,10 @@ ${finding.validationReason}
       { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"] },
     );
     const issueNumber = Number(output.trim().match(/\/issues\/(\d+)$/)?.[1]);
-    if (Number.isFinite(issueNumber)) createdIssues.push(issueNumber);
+    if (Number.isFinite(issueNumber)) {
+      createdIssues.push(issueNumber);
+      dispatchPrWorkflow(issueNumber);
+    }
   }
 
   if (createdIssues.length > 0 && !dryRun) {
@@ -154,4 +159,16 @@ ${finding.validationReason}
 
 function syncCloudflareApiKey(env: Record<string, string | undefined>) {
   process.env.CLOUDFLARE_API_KEY ||= env.CLOUDFLARE_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN;
+}
+
+function dispatchPrWorkflow(issueNumber: number): void {
+  try {
+    execFileSync(
+      "gh",
+      ["workflow", "run", "moco-api-pr.yml", "--field", `issue_number=${issueNumber}`, "--field", "dry_run=false"],
+      { stdio: "inherit" },
+    );
+  } catch (error) {
+    console.warn(`Could not dispatch MOCO API PR workflow for issue #${issueNumber}:`, error);
+  }
 }
