@@ -52,6 +52,13 @@ export default async function ({ init, payload, env }: FlueContext) {
   execFileSync("node", ["scripts/moco-watch/find-api-findings.mjs"], { stdio: "inherit" });
 
   const rawFindings = JSON.parse(readFileSync(".flue/tmp/moco-api-findings.json", "utf8")) as StoredFinding[];
+  if (rawFindings.length === 0) {
+    return v.parse(ResultSchema, {
+      createdIssues: [],
+      findings: 0,
+      timestampCommitted: false,
+    });
+  }
 
   const agent = await init({
     sandbox: "local",
@@ -62,11 +69,10 @@ export default async function ({ init, payload, env }: FlueContext) {
     `Review these candidate MOCO API findings and return only findings that are likely real API functionality changes.
 
 Rules:
-- Keep findings from docs/API_COVERAGE.md added endpoints unless they are obviously noise.
-- Keep blog findings only when they clearly describe new or changed MOCO REST API behavior.
-- Reject product announcements, case studies, UI-only changes, imports/exports, and integrations unless they explicitly add or change REST API endpoints, fields, webhooks, authentication, tokens, filters, or documented API behavior.
-- For every kept finding, set sdkActionable=true only when there is a concrete SDK implementation or generator/docs update that should be considered.
-- Return no finding for a blog article that is merely interesting but not SDK-actionable.
+- Only keep findings that are backed by concrete additions to docs/API_COVERAGE.md after updating mocoapp-api-docs.
+- Treat blog URLs only as supplemental references for those upstream docs changes. Never create an issue for a blog-only announcement.
+- Before setting sdkActionable=true, validate that the current SDK/generator/tests do not already cover the added endpoint surface.
+- Return no finding when the upstream docs change is already represented by docs/API_COVERAGE.md, src/generated/endpoints.ts, src/generated/resources, and existing tests.
 - Do not invent new findings.
 - Preserve hash, title, affectedEndpoints, docsUrls, and blogUrls exactly.
 - Rewrite summary in concise English. Use at most 6 bullet points or 900 characters. Do not paste the full blog article.

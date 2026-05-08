@@ -12,10 +12,11 @@ const readme = readFileSync("README.md", "utf8");
 const lastCheck = readLastCheckTimestamp(readme);
 const addedEndpoints = diffCoverage(beforeCoverage, afterCoverage).added;
 const blogEntries = filterBlogEntries(parseBlogAtom(atom), lastCheck).filter(isApiRelatedEntry);
+const relatedBlogUrls = blogEntries.map((entry) => entry.url);
 
 const docsFindings = groupEndpointsBySource(addedEndpoints).map(([source, endpoints]) => ({
   affectedEndpoints: endpoints.map((endpoint) => `${endpoint.method} ${endpoint.path}`),
-  blogUrls: [],
+  blogUrls: relatedBlogUrls,
   docsUrls: [docsUrlForSource(source)],
   recommendedSdkWork:
     "Regenerate the SDK from the updated MOCO API docs and add focused tests for the new endpoint or operation.",
@@ -23,17 +24,7 @@ const docsFindings = groupEndpointsBySource(addedEndpoints).map(([source, endpoi
   title: `New ${source.replace(/\.md$/, "").replaceAll("_", " ")} API endpoint${endpoints.length === 1 ? "" : "s"}`,
 }));
 
-const blogFindings = blogEntries.map((entry) => ({
-  affectedEndpoints: [],
-  blogUrls: [entry.url],
-  docsUrls: ["https://everii-group.github.io/mocoapp-api-docs/"],
-  recommendedSdkWork:
-    "Review the blog announcement against the generated endpoint coverage and update the SDK if the announcement exposes new API behavior.",
-  summary: `${entry.title}\n\n${entry.summary}`.trim(),
-  title: entry.title,
-}));
-
-const findings = [...docsFindings, ...blogFindings].map((finding) => ({
+const findings = docsFindings.map((finding) => ({
   ...finding,
   hash: findingHash(finding),
 }));

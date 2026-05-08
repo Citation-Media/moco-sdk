@@ -220,6 +220,7 @@ This repository uses [Flue](https://github.com/withastro/flue#readme) to watch f
 - `MOCO API Watch` runs every Monday at 06:00 UTC and can also be triggered manually from GitHub Actions.
 - Both Flue agents use the direct Workers AI model `cloudflare-workers-ai/@cf/moonshotai/kimi-k2.6`.
 - The watch agent updates the docs submodule in its CI workspace, regenerates `docs/API_COVERAGE.md`, checks `https://www.mocoapp.com/blog.atom`, and opens one issue per new API-relevant finding.
+- Blog posts are treated as supplemental references only. The watch agent creates issues only for concrete upstream docs/API coverage additions that still need SDK work.
 - The watch agent updates the `Last MOCO API feature check with findings` timestamp above by direct commit only when it creates at least one issue.
 - `MOCO API PR Agent` runs on trusted `moco-api-update` issues and opens implementation PRs.
 - Issues created by `github-actions[bot]` are trusted only when they include the expected Flue labels and hidden finding marker. Human-created issues must be authored by a repo collaborator with `write`, `maintain`, or `admin` permission.
