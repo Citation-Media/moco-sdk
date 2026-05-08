@@ -10,12 +10,12 @@ const SIGNATURE_HEADER = "x-moco-signature";
 export async function createWebhookSignature(input: MocoWebhookSignatureInput): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
-    encode(input.signatureKey),
+    encode(input.signatureKey) as BufferSource,
     { hash: "SHA-256", name: "HMAC" },
     false,
     ["sign"],
   );
-  const signature = await crypto.subtle.sign("HMAC", key, toBytes(input.payload));
+  const signature = await crypto.subtle.sign("HMAC", key, toBytes(input.payload) as BufferSource);
   return toHex(new Uint8Array(signature));
 }
 
@@ -82,7 +82,7 @@ function toBytes(payload: ArrayBuffer | Uint8Array | string): Uint8Array {
 }
 
 function encode(value: string): Uint8Array {
-  return new TextEncoder().encode(value);
+  return new TextEncoder().encode(value) as unknown as Uint8Array;
 }
 
 function toHex(bytes: Uint8Array): string {
