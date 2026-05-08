@@ -34,7 +34,7 @@ writeFileSync(".flue/tmp/moco-api-findings.json", JSON.stringify(findings, null,
 console.log(JSON.stringify({ count: findings.length, findings }, null, 2));
 
 function readLastCheckTimestamp(markdown) {
-  const match = markdown.match(/Last MOCO API feature check with findings:\s*(never|[0-9TZ:.\-+]+)\s*/);
+  const match = markdown.match(/^Last MOCO API feature check with findings:[ \t]*(never|[0-9TZ:.\-+]+)[ \t]*$/m);
   if (!match?.[1] || match[1] === "never") return null;
   return match[1];
 }

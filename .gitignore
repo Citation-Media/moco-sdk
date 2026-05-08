@@ -1,5 +1,6 @@
 node_modules/
 dist/
 .flue/tmp/
+.npm-cache/
 .env
 *.log

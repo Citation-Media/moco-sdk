@@ -2,10 +2,12 @@
 
 A typed TypeScript SDK for the MOCO ERP API. It is generated from the cloned `mocoapp-api-docs` documentation and currently covers every documented endpoint in `mocoapp-api-docs/sections`.
 
-Last MOCO API feature check with findings: 2026-05-08T18:19:15.395Z## Install
+Last MOCO API feature check with findings: 2026-05-08T18:19:15.395Z
+
+## Install
 
 ```bash
-npm install moco-sdk
+npm install @citation-media/moco-sdk
 ```
 
 For local development in this repository:
@@ -20,7 +22,7 @@ npm test
 ## Quick Start
 
 ```ts
-import { MocoClient } from "moco-sdk";
+import { MocoClient } from "@citation-media/moco-sdk";
 
 const moco = new MocoClient({
   subdomain: "your-company",
@@ -124,7 +126,7 @@ await moco.activities.list({}, { impersonateUserId: 933590696 });
 MOCO returns `429 Too Many Requests` when the account limit is exceeded. The SDK throws `MocoRateLimitError` with retry metadata from the response headers.
 
 ```ts
-import { MocoRateLimitError } from "moco-sdk";
+import { MocoRateLimitError } from "@citation-media/moco-sdk";
 
 try {
   await moco.projects.list();
@@ -151,7 +153,7 @@ const moco = new MocoClient({
 MOCO signs webhook payloads with HMAC-SHA256. Verify the raw request payload before parsing or trusting it:
 
 ```ts
-import { createWebhookEnvelope, verifyWebhookRequest } from "moco-sdk";
+import { createWebhookEnvelope, verifyWebhookRequest } from "@citation-media/moco-sdk";
 
 const rawBody = await request.text();
 const valid = await verifyWebhookRequest(rawBody, request.headers, process.env.MOCO_WEBHOOK_SIGNATURE_KEY!);

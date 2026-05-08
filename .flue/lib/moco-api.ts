@@ -3,7 +3,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 
 export const CHECK_TIMESTAMP_PATTERN =
-  /Last MOCO API feature check with findings:\s*(?<timestamp>never|[0-9TZ:.\-+]+)\s*/;
+  /^Last MOCO API feature check with findings:[ \t]*(?<timestamp>never|[0-9TZ:.\-+]+)[ \t]*$/m;
 
 export const FINDING_LABEL = "moco-api-update";
 export const AUTO_PR_LABEL = "flue:auto-pr-ready";

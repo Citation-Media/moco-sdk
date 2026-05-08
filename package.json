@@ -1,10 +1,13 @@
 {
-  "name": "moco-sdk",
+  "name": "@citation-media/moco-sdk",
   "version": "0.1.0",
   "description": "TypeScript SDK for the MOCO ERP API.",
   "type": "commonjs",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "restricted"
+  },
   "files": [
     "dist",
     "README.md",
