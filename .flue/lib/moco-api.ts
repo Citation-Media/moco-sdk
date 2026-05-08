@@ -11,6 +11,29 @@ export const NEEDS_HUMAN_LABEL = "flue:needs-human";
 export const PR_OPENED_LABEL = "flue:pr-opened";
 export const FINDING_MARKER_PREFIX = "flue:moco-api-update";
 
+const LABELS = [
+  {
+    color: "0e8a16",
+    description: "Potential upstream MOCO REST API update found by Flue.",
+    name: FINDING_LABEL,
+  },
+  {
+    color: "1d76db",
+    description: "Trusted Flue issue ready for an automated implementation PR.",
+    name: AUTO_PR_LABEL,
+  },
+  {
+    color: "d93f0b",
+    description: "Flue could not safely handle this automatically.",
+    name: NEEDS_HUMAN_LABEL,
+  },
+  {
+    color: "5319e7",
+    description: "Flue opened an implementation PR.",
+    name: PR_OPENED_LABEL,
+  },
+];
+
 export interface BlogEntry {
   title: string;
   url: string;
@@ -174,6 +197,20 @@ export function issueExists(hash: string): boolean {
     return JSON.parse(output).length > 0;
   } catch {
     return false;
+  }
+}
+
+export function ensureFlueLabels(): void {
+  for (const label of LABELS) {
+    try {
+      execFileSync(
+        "gh",
+        ["label", "create", label.name, "--color", label.color, "--description", label.description],
+        { stdio: ["ignore", "ignore", "pipe"] },
+      );
+    } catch {
+      // Label creation is idempotent for this workflow; existing labels are fine.
+    }
   }
 }
 

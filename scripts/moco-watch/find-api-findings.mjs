@@ -69,9 +69,15 @@ function filterBlogEntries(entries, sinceIso) {
 }
 
 function isApiRelatedEntry(entry) {
-  return /\b(api|rest|endpoint|webhook|integration|oauth|token|export|import)\b/i.test(
-    `${entry.title}\n${entry.summary}`,
-  );
+  const text = `${entry.title}\n${entry.summary}`;
+  if (/\b(api updates?|rest|endpunkt|endpoint|webhook|oauth|token)\b/i.test(entry.title)) return true;
+
+  return [
+    /\b(api|schnittstelle|rest)\b.{0,100}\b(neu|neue|neuer|neues|neuen|jetzt|ab sofort|verfügbar|unterstützt|geändert|präzisiert)\b/i,
+    /\b(neu|neue|neuer|neues|neuen|jetzt|ab sofort|verfügbar|unterstützt|geändert|präzisiert)\b.{0,100}\b(api|schnittstelle|rest)\b/i,
+    /\b(neu|neue|neuer|neues|neuen)\s+(endpunkt|endpunkte|endpoint|endpoints|datenfeld|datenfelder|filter|webhook|webhooks)\b/i,
+    /\b(bearer-token|oauth|api-token|api-dokumentation)\b/i,
+  ].some((pattern) => pattern.test(text));
 }
 
 function parseCoverage(markdown) {

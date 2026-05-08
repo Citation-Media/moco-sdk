@@ -5,8 +5,8 @@ import { defineCommand } from "@flue/sdk/node";
 import * as v from "valibot";
 import {
   AUTO_PR_LABEL,
+  ensureFlueLabels,
   FINDING_LABEL,
-  findingMarker,
   issueBodyForFinding,
   issueExists,
   issueTitleForFinding,
@@ -30,6 +30,11 @@ const ResultSchema = v.object({
 
 interface StoredFinding extends Finding {
   hash: string;
+}
+
+interface ReviewedFinding extends StoredFinding {
+  sdkActionable: boolean;
+  validationReason: string;
 }
 
 export default async function ({ init, payload, env }: FlueContext) {
@@ -58,9 +63,13 @@ export default async function ({ init, payload, env }: FlueContext) {
 
 Rules:
 - Keep findings from docs/API_COVERAGE.md added endpoints unless they are obviously noise.
-- Keep blog findings only when the title or summary references REST API, endpoints, webhooks, integrations, imports, exports, or API tokens.
+- Keep blog findings only when they clearly describe new or changed MOCO REST API behavior.
+- Reject product announcements, case studies, UI-only changes, imports/exports, and integrations unless they explicitly add or change REST API endpoints, fields, webhooks, authentication, tokens, filters, or documented API behavior.
+- For every kept finding, set sdkActionable=true only when there is a concrete SDK implementation or generator/docs update that should be considered.
+- Return no finding for a blog article that is merely interesting but not SDK-actionable.
 - Do not invent new findings.
 - Preserve hash, title, summary, affectedEndpoints, docsUrls, blogUrls, and recommendedSdkWork exactly enough for issue creation.
+- Add a short validationReason explaining why the SDK should consider implementing it.
 
 Candidate findings JSON:
 ${JSON.stringify(rawFindings, null, 2)}`,
@@ -74,8 +83,10 @@ ${JSON.stringify(rawFindings, null, 2)}`,
             docsUrls: v.array(v.string()),
             hash: v.string(),
             recommendedSdkWork: v.string(),
+            sdkActionable: v.boolean(),
             summary: v.string(),
             title: v.string(),
+            validationReason: v.string(),
           }),
         ),
       }),
@@ -83,15 +94,17 @@ ${JSON.stringify(rawFindings, null, 2)}`,
   );
 
   const createdIssues: number[] = [];
-  const keptFindings = reviewed.findings as StoredFinding[];
+  const keptFindings = (reviewed.findings as ReviewedFinding[]).filter((finding) => finding.sdkActionable);
+  if (keptFindings.length > 0 && !dryRun) ensureFlueLabels();
 
   for (const finding of keptFindings) {
     if (issueExists(finding.hash)) continue;
 
     const title = issueTitleForFinding(finding, finding.hash);
     const body = `${issueBodyForFinding(finding, finding.hash)}
+## Flue Validation
 
-${findingMarker(finding.hash)}
+${finding.validationReason}
 `;
 
     if (dryRun) {

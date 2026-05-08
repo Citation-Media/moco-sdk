@@ -2,7 +2,14 @@ import { execFileSync } from "node:child_process";
 import type { FlueContext } from "@flue/sdk/client";
 import { defineCommand } from "@flue/sdk/node";
 import * as v from "valibot";
-import { AUTO_PR_LABEL, FINDING_LABEL, NEEDS_HUMAN_LABEL, PR_OPENED_LABEL, isTrustedIssueAuthor } from "../lib/moco-api";
+import {
+  AUTO_PR_LABEL,
+  FINDING_LABEL,
+  NEEDS_HUMAN_LABEL,
+  PR_OPENED_LABEL,
+  ensureFlueLabels,
+  isTrustedIssueAuthor,
+} from "../lib/moco-api";
 
 export const triggers = {};
 
@@ -23,6 +30,7 @@ export default async function ({ init, payload, env }: FlueContext) {
   const dryRun = Boolean(typedPayload?.dryRun);
   const repo = process.env.GITHUB_REPOSITORY ?? env?.GITHUB_REPOSITORY;
   syncCloudflareApiKey(env);
+  if (!dryRun) ensureFlueLabels();
 
   if (!issueNumber || !repo) {
     return v.parse(ResultSchema, {
