@@ -2,9 +2,7 @@
 
 A typed TypeScript SDK for the MOCO ERP API. It is generated from the cloned `mocoapp-api-docs` documentation and currently covers every documented endpoint in `mocoapp-api-docs/sections`.
 
-Last MOCO API feature check with findings: never
-
-## Install
+Last MOCO API feature check with findings: 2026-05-08T18:19:15.395Z## Install
 
 ```bash
 npm install moco-sdk
