@@ -166,6 +166,10 @@ const envelope = createWebhookEnvelope(JSON.parse(rawBody), request.headers);
 console.log(envelope.target, envelope.event, envelope.userId);
 ```
 
+## Guides
+
+- [Track users assigned via contract webhooks](docs/guides/track-project-contract-webhooks.md)
+
 ## Custom and Future Routes
 
 If MOCO adds a route before this SDK is regenerated, use the typed low-level request API:
