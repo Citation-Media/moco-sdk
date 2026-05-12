@@ -1,4 +1,4 @@
-# Track users assigned via contract webhooks
+# Track project assignments through contract webhooks
 
 Use this guide when you want to keep project assignments in sync whenever a contract is created, updated, or deleted.
 
@@ -7,7 +7,7 @@ Use this guide when you want to keep project assignments in sync whenever a cont
 1. Create a `Contract` webhook in MOCO and subscribe to create/update/delete events.
 2. Verify the webhook signature.
 3. Extract `project_id` from the webhook payload.
-4. Fetch the project with full content so you can read the full contract list.
+4. Fetch the project with full content so you can retrieve the full contract list.
 
 ## Minimal TypeScript example
 
@@ -47,6 +47,7 @@ export async function handleContractWebhook(request: Request): Promise<Response>
     return new Response("Ignored", { status: 200 });
   }
 
+  // Different MOCO webhook variants may place project_id under different keys.
   const projectId = payload.contract?.project_id ?? payload.data?.project_id ?? payload.project_id;
   if (!projectId) {
     return new Response("Missing project_id", { status: 400 });
