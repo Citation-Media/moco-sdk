@@ -168,7 +168,7 @@ console.log(envelope.target, envelope.event, envelope.userId);
 
 ## Guides
 
-- [Track users assigned via contract webhooks](docs/guides/track-project-contract-webhooks.md)
+- [Track project assignments via contract webhooks](docs/guides/track-project-contract-webhooks.md)
 
 ## Custom and Future Routes
 
